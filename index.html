@@ -63,6 +63,7 @@
   }
 
   // Initialize the program with the first day's sets
+  // based on the program in https://t-nation.com/t/how-to-increase-your-pull-up-power/284502
   const program = [
     { day: 1, sets: Array.from({ length: 5 }, (_, i) => Math.max(initialPullups - i, 1)) }
   ];
