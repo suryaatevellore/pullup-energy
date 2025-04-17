@@ -47,20 +47,73 @@
 <body>
   <h1>Pull-Up Program Tracker</h1>
   <div id="program"></div>
-
+  <div>
+    <label for="initialPullups">Enter Initial Total Pull-Ups: </label>
+    <input type="number" id="initialPullups" placeholder="e.g., 5" />
+    <button id="startProgram">Start Program</button>
+  </div>
+  <div id="program"></div>
   <script>
-    const program = [
-      { day: 1, sets: [5, 4, 3, 2, 1] },
-      { day: 2, sets: [5, 5, 4, 3, 2] },
-      { day: 3, sets: [6, 5, 4, 3, 2] },
-      { day: 4, sets: [6, 5, 5, 4, 3] },
-      { day: 5, sets: [7, 6, 5, 4, 3] },
-      { day: 6, sets: [7, 6, 6, 5, 4] },
-      { day: 7, sets: [8, 7, 6, 5, 4] },
-      { day: 8, sets: [8, 7, 7, 6, 5] },
-      { day: 9, sets: [9, 8, 7, 6, 5] },
-      { day: 10, sets: [10, 9, 8, 7, 6] }
+    program = [
+      { day: 1, sets: [5,4,3,2,1] }
     ];
+
+    // generate the program for 30 days
+    // 1. Every 6th day is an off day
+    for (let i = 1; i < 30; i += 1) {
+      // Off day
+      if ((i+1) % 6 === 0) {
+        console.log("inside off day check", i);
+        program.push({
+          day: i+1,
+          sets: [0]
+        });
+        continue;
+      } 
+
+      let sets = []
+      let previousSets = program[i - 1].sets;
+      for (j = 0; j < previousSets.length; j++) {
+        // count off days, if the previous day was an off day
+        // start with the sets of the day before it
+        if (previousSets[j] == 0) {
+          previousSets = program[i-2].sets.map((set, index) => {
+            if (index == 0) return set + 1;
+            else return set;
+          });
+        }
+        let newSets = previousSets.map((set, index) => {
+          if (index == 5 - i) return set + 1;
+          else return set;
+        });
+        sets = newSets;
+      }
+      program.push({
+          day: i+1,
+          sets: sets
+        });
+    }
+    print(program);
+    // const program = [
+    //   { day: 1, sets: [5, 4, 3, 2, 1] },
+    //   { day: 2, sets: [5, 4, 3, 2, 2] },
+    //   { day: 3, sets: [5, 4, 3, 3, 2] },
+    //   { day: 4, sets: [5, 4, 4, 3, 2] },
+    //   { day: 5, sets: [5, 5, 4, 3, 2] },
+    //   { day: 6, sets: [0] },
+    //   { day: 7, sets: [6, 5, 4, 3, 2] },
+    //   { day: 8, sets: [6, 5, 4, 3, 3] },
+    //   { day: 9, sets: [6, 5, 4, 4, 3] },
+    //   { day: 10, sets: [6, 6, 4, 4, 3] },
+    //   { day: 11, sets: [6, 6, 5, 4, 3] },
+    //   { day: 12, sets: [0] },
+    //   { day: 13, sets: [7, 6, 5, 4, 3] },
+    //   { day: 14, sets: [7, 6, 5, 4, 4] },
+    //   { day: 15, sets: [7, 6, 5, 5, 3] },
+    //   { day: 16, sets: [7, 6, 6, 5, 4] },
+    //   { day: 17, sets: [7, 7, 6, 5, 4] },
+    //   { day: 18, sets: [0] },
+    // ];
 
     const container = document.getElementById('program');
     const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
