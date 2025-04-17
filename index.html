@@ -62,10 +62,13 @@
     return;
   }
 
+  // TODO: there is a subtle bug here. 
+  // if the constraint thhat different between sets is > 1 , then we add a new set at the end and go from there
+  // this shows up in the 3 RM pullup program
   // Initialize the program with the first day's sets
   // based on the program in https://t-nation.com/t/how-to-increase-your-pull-up-power/284502
   const program = [
-    { day: 1, sets: Array.from({ length: 5 }, (_, i) => Math.max(initialPullups - i, 1)) }
+    { day: 1, sets: Array.from({ length: Math.min(initialPullups+1, 5) }, (_, i) => Math.max(initialPullups - i, 1)) }
   ];
 
   // Generate the program for 30 days
@@ -73,7 +76,6 @@
     for (let i = 1; i < 30; i += 1) {
       // Off day
       if ((i+1) % 6 === 0) {
-        console.log("inside off day check", i);
         program.push({
           day: i+1,
           sets: [0]
@@ -93,7 +95,7 @@
           });
         }
         let newSets = previousSets.map((set, index) => {
-          if (index == 5 - i) return set + 1;
+          if (index == initialPullups - i) return set + 1;
           else return set;
         });
         sets = newSets;
