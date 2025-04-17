@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pull-Up Progress Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    .day {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .day.completed {
+      background: #c8e6c9;
+      text-decoration: line-through;
+    }
+    .day-number {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pull-Up Progress Tracker</h1>
+  <div id="program"></div>
+
+  <script>
+    // Define your pull-up program
+    const program = [
+      { day: 1, reps: 10 },
+      { day: 2, reps: 12 },
+      { day: 3, reps: 14 },
+      { day: 4, reps: 16 },
+      { day: 5, reps: 18 },
+      { day: 6, reps: 20 },
+      { day: 7, reps: 22 },
+      { day: 8, reps: 24 },
+      { day: 9, reps: 26 },
+      { day: 10, reps: 28 }
+    ];
+
+    const programContainer = document.getElementById('program');
+
+    // Load completed days from localStorage
+    const completedDays = JSON.parse(localStorage.getItem('completedDays')) || [];
+
+    // Render the program
+    program.forEach(entry => {
+      const dayDiv = document.createElement('div');
+      dayDiv.classList.add('day');
+      if (completedDays.includes(entry.day)) {
+        dayDiv.classList.add('completed');
+      }
+
+      dayDiv.innerHTML = `
+        <span class="day-number">Day ${entry.day}</span>
+        <span>${entry.reps} Pull-Ups</span>
+      `;
+
+      // Toggle completion status on click
+      dayDiv.addEventListener('click', () => {
+        dayDiv.classList.toggle('completed');
+        if (dayDiv.classList.contains('completed')) {
+          completedDays.push(entry.day);
+        } else {
+          const index = completedDays.indexOf(entry.day);
+          if (index > -1) {
+            completedDays.splice(index, 1);
+          }
+        }
+        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+      });
+
+      programContainer.appendChild(dayDiv);
+    });
+  </script>
+</body>
+</html>
