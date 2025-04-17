@@ -46,28 +46,48 @@
 </head>
 <body>
   <h1>Pull-Up Program Tracker</h1>
-  <div id="program"></div>
-  <div>
-    <label for="initialPullups">Enter Initial Total Pull-Ups: </label>
-    <input type="number" id="initialPullups" placeholder="e.g., 5" />
-    <button id="startProgram">Start Program</button>
-  </div>
+  <div id="inputContainer"></div>
   <div id="program"></div>
   <script>
-    document.getElementById('startProgram').addEventListener('click', () => {
-  const initialPullups = parseInt(document.getElementById('initialPullups').value, 10);
+    const inputContainer = document.getElementById('inputContainer');
+    const programContainer = document.getElementById('program');
 
-  if (isNaN(initialPullups) || initialPullups <= 0) {
-    alert('Please enter a valid number of pull-ups.');
-    return;
-  }
+    // Check if initialPullups is already in localStorage
+    let initialPullups = JSON.parse(localStorage.getItem('initialPullups'));
 
-  // TODO: there is a subtle bug here. 
-  // if the constraint thhat different between sets is > 1 , then we add a new set at the end and go from there
-  // this shows up in the 3 RM pullup program
-  // Initialize the program with the first day's sets
-  // based on the program in https://t-nation.com/t/how-to-increase-your-pull-up-power/284502
-  const program = [
+    if (!initialPullups) {
+      // Render the input field and button if initialPullups is not in localStorage
+      inputContainer.innerHTML = `
+        <div>
+          <label for="initialPullups">Enter Initial Total Pull-Ups: </label>
+          <input type="number" id="initialPullups" placeholder="e.g., 5" />
+          <button id="startProgram">Start Program</button>
+        </div>
+      `;
+
+      document.getElementById('startProgram').addEventListener('click', () => {
+        initialPullups = parseInt(document.getElementById('initialPullups').value, 10);
+
+        if (isNaN(initialPullups) || initialPullups <= 0) {
+          alert('Please enter a valid number of pull-ups.');
+          return;
+        }
+
+        // Save the initial pull-ups to localStorage
+        localStorage.setItem('initialPullups', JSON.stringify(initialPullups));
+
+        // Clear the input container and generate the program
+        inputContainer.innerHTML = '';
+        generateProgram(initialPullups);
+      });
+    } else {
+      // If initialPullups is already in localStorage, directly generate the program
+      generateProgram(initialPullups);
+    }
+
+    function generateProgram(initialPullups) {
+      // Initialize the program with the first day's sets
+      let program = [
     { day: 1, sets: Array.from({ length: Math.min(initialPullups+1, 5) }, (_, i) => Math.max(initialPullups - i, 1)) }
   ];
 
@@ -99,7 +119,11 @@
         });
       } else {
           newSets = previousSets.map((set, index) => {
-            if (index == previousSets.length-(i-blockStart)) return set + 1;
+            if (index == 0) return set
+            // logic here is that if we violate the constraint that value at index-1 is less than (value at index+1)
+            // then we need to return the min of the two values
+            // we should never violate the constraint that value at index-1 is less than (value at index+1)
+            else if (index == previousSets.length-(i-blockStart)) return Math.min(previousSets[index-1], set + 1);
             else return set;
           });
           
@@ -111,48 +135,46 @@
           sets: newSets
         });
     }
+      // Clear the program container
+      programContainer.innerHTML = '';
 
-  // Clear the program container
-  const container = document.getElementById('program');
-  container.innerHTML = '';
+      // Render the program
+      const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
 
-  // Render the program
-  const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
+      program.forEach(({ day, sets }) => {
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('day');
 
-  program.forEach(({ day, sets }) => {
-    const dayDiv = document.createElement('div');
-    dayDiv.classList.add('day');
+        const title = document.createElement('h2');
+        title.textContent = `Day ${day}`;
+        dayDiv.appendChild(title);
 
-    const title = document.createElement('h2');
-    title.textContent = `Day ${day}`;
-    dayDiv.appendChild(title);
+        const setsDiv = document.createElement('div');
+        setsDiv.classList.add('sets');
 
-    const setsDiv = document.createElement('div');
-    setsDiv.classList.add('sets');
+        sets.forEach((count, index) => {
+          const setKey = `day${day}_set${index}`;
+          const tile = document.createElement('div');
+          tile.classList.add('set-tile');
+          tile.textContent = count;
 
-    sets.forEach((count, index) => {
-      const setKey = `day${day}_set${index}`;
-      const tile = document.createElement('div');
-      tile.classList.add('set-tile');
-      tile.textContent = count;
+          if (savedProgress[setKey]) {
+            tile.classList.add('completed');
+          }
 
-      if (savedProgress[setKey]) {
-        tile.classList.add('completed');
-      }
+          tile.addEventListener('click', () => {
+            tile.classList.toggle('completed');
+            savedProgress[setKey] = tile.classList.contains('completed');
+            localStorage.setItem('pullupProgress', JSON.stringify(savedProgress));
+          });
 
-      tile.addEventListener('click', () => {
-        tile.classList.toggle('completed');
-        savedProgress[setKey] = tile.classList.contains('completed');
-        localStorage.setItem('pullupProgress', JSON.stringify(savedProgress));
+          setsDiv.appendChild(tile);
+        });
+
+        dayDiv.appendChild(setsDiv);
+        programContainer.appendChild(dayDiv);
       });
-
-      setsDiv.appendChild(tile);
-    });
-
-    dayDiv.appendChild(setsDiv);
-    container.appendChild(dayDiv);
-  });
-});
+    }
   </script>
 </body>
 </html>
