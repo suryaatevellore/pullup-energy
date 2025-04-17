@@ -48,9 +48,12 @@
   <h1>Pull-Up Program Tracker</h1>
   <div id="inputContainer"></div>
   <div id="program"></div>
+  <div id="resetContainer"></div>
   <script>
     const inputContainer = document.getElementById('inputContainer');
     const programContainer = document.getElementById('program');
+    const resetContainer = document.getElementById('resetContainer');
+
 
     // Check if initialPullups is already in localStorage
     let initialPullups = JSON.parse(localStorage.getItem('initialPullups'));
@@ -79,10 +82,12 @@
         // Clear the input container and generate the program
         inputContainer.innerHTML = '';
         generateProgram(initialPullups);
+        renderResetButton();
       });
     } else {
       // If initialPullups is already in localStorage, directly generate the program
       generateProgram(initialPullups);
+      renderResetButton();
     }
 
     function generateProgram(initialPullups) {
@@ -173,6 +178,22 @@
 
         dayDiv.appendChild(setsDiv);
         programContainer.appendChild(dayDiv);
+      });
+    }
+
+    function renderResetButton() {
+      // Render the reset button if initialPullups exists
+      resetContainer.innerHTML = `
+        <button id="resetProgram" style="margin-top: 20px;">Reset Program</button>
+      `;
+
+      document.getElementById('resetProgram').addEventListener('click', () => {
+        // Clear localStorage
+        localStorage.removeItem('initialPullups');
+        localStorage.removeItem('pullupProgress');
+
+        // Reload the page to reset the program
+        location.reload();
       });
     }
   </script>
