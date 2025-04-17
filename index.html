@@ -3,90 +3,100 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pull-Up Progress Tracker</title>
+  <title>Pull-Up Program Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
       padding: 20px;
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
     }
     h1 {
       text-align: center;
     }
     .day {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       background: #fff;
-      margin: 10px 0;
+      margin: 15px 0;
       padding: 15px;
-      border-radius: 5px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .day h2 {
+      margin: 0 0 10px;
+    }
+    .sets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .set-tile {
+      background: #ddd;
+      padding: 10px 15px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: 0.2s;
     }
-    .day.completed {
-      background: #c8e6c9;
+    .set-tile.completed {
+      background: #4caf50;
+      color: white;
       text-decoration: line-through;
-    }
-    .day-number {
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>Pull-Up Progress Tracker</h1>
+  <h1>Pull-Up Program Tracker</h1>
   <div id="program"></div>
 
   <script>
-    // Define your pull-up program
     const program = [
-      { day: 1, reps: 10 },
-      { day: 2, reps: 12 },
-      { day: 3, reps: 14 },
-      { day: 4, reps: 16 },
-      { day: 5, reps: 18 },
-      { day: 6, reps: 20 },
-      { day: 7, reps: 22 },
-      { day: 8, reps: 24 },
-      { day: 9, reps: 26 },
-      { day: 10, reps: 28 }
+      { day: 1, sets: [5, 4, 3, 2, 1] },
+      { day: 2, sets: [5, 5, 4, 3, 2] },
+      { day: 3, sets: [6, 5, 4, 3, 2] },
+      { day: 4, sets: [6, 5, 5, 4, 3] },
+      { day: 5, sets: [7, 6, 5, 4, 3] },
+      { day: 6, sets: [7, 6, 6, 5, 4] },
+      { day: 7, sets: [8, 7, 6, 5, 4] },
+      { day: 8, sets: [8, 7, 7, 6, 5] },
+      { day: 9, sets: [9, 8, 7, 6, 5] },
+      { day: 10, sets: [10, 9, 8, 7, 6] }
     ];
 
-    const programContainer = document.getElementById('program');
+    const container = document.getElementById('program');
+    const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
 
-    // Load completed days from localStorage
-    const completedDays = JSON.parse(localStorage.getItem('completedDays')) || [];
-
-    // Render the program
-    program.forEach(entry => {
+    program.forEach(({ day, sets }) => {
       const dayDiv = document.createElement('div');
       dayDiv.classList.add('day');
-      if (completedDays.includes(entry.day)) {
-        dayDiv.classList.add('completed');
-      }
 
-      dayDiv.innerHTML = `
-        <span class="day-number">Day ${entry.day}</span>
-        <span>${entry.reps} Pull-Ups</span>
-      `;
+      const title = document.createElement('h2');
+      title.textContent = `Day ${day}`;
+      dayDiv.appendChild(title);
 
-      // Toggle completion status on click
-      dayDiv.addEventListener('click', () => {
-        dayDiv.classList.toggle('completed');
-        if (dayDiv.classList.contains('completed')) {
-          completedDays.push(entry.day);
-        } else {
-          const index = completedDays.indexOf(entry.day);
-          if (index > -1) {
-            completedDays.splice(index, 1);
-          }
+      const setsDiv = document.createElement('div');
+      setsDiv.classList.add('sets');
+
+      sets.forEach((count, index) => {
+        const setKey = `day${day}_set${index}`;
+        const tile = document.createElement('div');
+        tile.classList.add('set-tile');
+        tile.textContent = count;
+
+        if (savedProgress[setKey]) {
+          tile.classList.add('completed');
         }
-        localStorage.setItem('completedDays', JSON.stringify(completedDays));
+
+        tile.addEventListener('click', () => {
+          tile.classList.toggle('completed');
+          savedProgress[setKey] = tile.classList.contains('completed');
+          localStorage.setItem('pullupProgress', JSON.stringify(savedProgress));
+        });
+
+        setsDiv.appendChild(tile);
       });
 
-      programContainer.appendChild(dayDiv);
+      dayDiv.appendChild(setsDiv);
+      container.appendChild(dayDiv);
     });
   </script>
 </body>
