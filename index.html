@@ -54,12 +54,21 @@
   </div>
   <div id="program"></div>
   <script>
-    program = [
-      { day: 1, sets: [5,4,3,2,1] }
-    ];
+    document.getElementById('startProgram').addEventListener('click', () => {
+  const initialPullups = parseInt(document.getElementById('initialPullups').value, 10);
 
-    // generate the program for 30 days
-    // 1. Every 6th day is an off day
+  if (isNaN(initialPullups) || initialPullups <= 0) {
+    alert('Please enter a valid number of pull-ups.');
+    return;
+  }
+
+  // Initialize the program with the first day's sets
+  const program = [
+    { day: 1, sets: Array.from({ length: 5 }, (_, i) => Math.max(initialPullups - i, 1)) }
+  ];
+
+  // Generate the program for 30 days
+  // 1. Every 6th day is an off day
     for (let i = 1; i < 30; i += 1) {
       // Off day
       if ((i+1) % 6 === 0) {
@@ -93,64 +102,48 @@
           sets: sets
         });
     }
-    print(program);
-    // const program = [
-    //   { day: 1, sets: [5, 4, 3, 2, 1] },
-    //   { day: 2, sets: [5, 4, 3, 2, 2] },
-    //   { day: 3, sets: [5, 4, 3, 3, 2] },
-    //   { day: 4, sets: [5, 4, 4, 3, 2] },
-    //   { day: 5, sets: [5, 5, 4, 3, 2] },
-    //   { day: 6, sets: [0] },
-    //   { day: 7, sets: [6, 5, 4, 3, 2] },
-    //   { day: 8, sets: [6, 5, 4, 3, 3] },
-    //   { day: 9, sets: [6, 5, 4, 4, 3] },
-    //   { day: 10, sets: [6, 6, 4, 4, 3] },
-    //   { day: 11, sets: [6, 6, 5, 4, 3] },
-    //   { day: 12, sets: [0] },
-    //   { day: 13, sets: [7, 6, 5, 4, 3] },
-    //   { day: 14, sets: [7, 6, 5, 4, 4] },
-    //   { day: 15, sets: [7, 6, 5, 5, 3] },
-    //   { day: 16, sets: [7, 6, 6, 5, 4] },
-    //   { day: 17, sets: [7, 7, 6, 5, 4] },
-    //   { day: 18, sets: [0] },
-    // ];
 
-    const container = document.getElementById('program');
-    const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
+  // Clear the program container
+  const container = document.getElementById('program');
+  container.innerHTML = '';
 
-    program.forEach(({ day, sets }) => {
-      const dayDiv = document.createElement('div');
-      dayDiv.classList.add('day');
+  // Render the program
+  const savedProgress = JSON.parse(localStorage.getItem('pullupProgress')) || {};
 
-      const title = document.createElement('h2');
-      title.textContent = `Day ${day}`;
-      dayDiv.appendChild(title);
+  program.forEach(({ day, sets }) => {
+    const dayDiv = document.createElement('div');
+    dayDiv.classList.add('day');
 
-      const setsDiv = document.createElement('div');
-      setsDiv.classList.add('sets');
+    const title = document.createElement('h2');
+    title.textContent = `Day ${day}`;
+    dayDiv.appendChild(title);
 
-      sets.forEach((count, index) => {
-        const setKey = `day${day}_set${index}`;
-        const tile = document.createElement('div');
-        tile.classList.add('set-tile');
-        tile.textContent = count;
+    const setsDiv = document.createElement('div');
+    setsDiv.classList.add('sets');
 
-        if (savedProgress[setKey]) {
-          tile.classList.add('completed');
-        }
+    sets.forEach((count, index) => {
+      const setKey = `day${day}_set${index}`;
+      const tile = document.createElement('div');
+      tile.classList.add('set-tile');
+      tile.textContent = count;
 
-        tile.addEventListener('click', () => {
-          tile.classList.toggle('completed');
-          savedProgress[setKey] = tile.classList.contains('completed');
-          localStorage.setItem('pullupProgress', JSON.stringify(savedProgress));
-        });
+      if (savedProgress[setKey]) {
+        tile.classList.add('completed');
+      }
 
-        setsDiv.appendChild(tile);
+      tile.addEventListener('click', () => {
+        tile.classList.toggle('completed');
+        savedProgress[setKey] = tile.classList.contains('completed');
+        localStorage.setItem('pullupProgress', JSON.stringify(savedProgress));
       });
 
-      dayDiv.appendChild(setsDiv);
-      container.appendChild(dayDiv);
+      setsDiv.appendChild(tile);
     });
+
+    dayDiv.appendChild(setsDiv);
+    container.appendChild(dayDiv);
+  });
+});
   </script>
 </body>
 </html>
