@@ -99,7 +99,7 @@
         });
       } else {
           newSets = previousSets.map((set, index) => {
-            if (index == 5-(i-blockStart)) return set + 1;
+            if (index == previousSets.length-(i-blockStart)) return set + 1;
             else return set;
           });
           
