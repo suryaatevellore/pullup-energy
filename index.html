@@ -73,6 +73,8 @@
 
   // Generate the program for 30 days
   // 1. Every 6th day is an off day
+  // start is basically a start marker for a block
+  let blockStart = 0;
     for (let i = 1; i < 30; i += 1) {
       // Off day
       if ((i+1) % 6 === 0) {
@@ -80,29 +82,33 @@
           day: i+1,
           sets: [0]
         });
+        blockStart = i+1;
         continue;
       } 
 
-      let sets = []
+      let newSets = [];
       let previousSets = program[i - 1].sets;
-      for (j = 0; j < previousSets.length; j++) {
+      let prevDay = program[i - 1].day;
         // count off days, if the previous day was an off day
         // start with the sets of the day before it
-        if (previousSets[j] == 0) {
-          previousSets = program[i-2].sets.map((set, index) => {
-            if (index == 0) return set + 1;
-            else return set;
-          });
-        }
-        let newSets = previousSets.map((set, index) => {
-          if (index == initialPullups - i) return set + 1;
+        // we also increment the first tile by 1 to mark a new block
+      if (previousSets[0] == 0) {
+        newSets = program[i-2].sets.map((set, index) => {
+          if (index == 0) return set + 1;
           else return set;
         });
-        sets = newSets;
-      }
+      } else {
+          newSets = previousSets.map((set, index) => {
+            if (index == 5-(i-blockStart)) return set + 1;
+            else return set;
+          });
+          
+        }
+      
+      console.log("day ", i+1, "sets", newSets);
       program.push({
           day: i+1,
-          sets: sets
+          sets: newSets
         });
     }
 
